@@ -4,8 +4,14 @@ import os
 
 app = Flask(__name__)
 
-BOT_TOKEN = os.environ.get("8494992296:AAHphD4LulAA2dZ_0L0xtN7NRliIWeHe-Xk")
-CHAT_ID = os.environ.get("357177171")
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+CHAT_ID = os.environ.get("CHAT_ID")
+
+@app.route("/", methods=["GET"])
+def home():
+    token_ok = "yes" if BOT_TOKEN else "no"
+    chat_ok = "yes" if CHAT_ID else "no"
+    return f"Bot is live | BOT_TOKEN loaded: {token_ok} | CHAT_ID loaded: {chat_ok}", 200
 
 @app.route("/", methods=["POST"])
 def webhook():
@@ -17,16 +23,13 @@ SL: {data.get('sl')}
 TP: {data.get('tp')}"""
 
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+
     r = requests.post(url, json={
         "chat_id": CHAT_ID,
         "text": message
     })
 
-    return ("ok", 200) if r.ok else (r.text, 500)
-
-@app.route("/", methods=["GET"])
-def home():
-    return "Bot is live", 200
+    return (r.text, r.status_code)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
