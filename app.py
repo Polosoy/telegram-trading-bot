@@ -17,10 +17,7 @@ def home():
 def webhook():
     data = request.get_json(silent=True) or {}
 
-    message = f"""{data.get('side')} {data.get('symbol')}
-Entry: {data.get('entry')}
-SL: {data.get('sl')}
-TP: {data.get('tp')}"""
+    message = data.get("message", "No message received")
 
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
