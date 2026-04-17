@@ -16,9 +16,6 @@ def webhook():
     data = request.get_json(silent=True)
     raw_text = request.get_data(as_text=True)
 
-    print("Incoming JSON:", data)
-    print("Incoming raw text:", raw_text)
-
     message = None
 
     if isinstance(data, dict):
