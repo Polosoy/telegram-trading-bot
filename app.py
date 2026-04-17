@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import requests
 import os
 
@@ -9,24 +9,32 @@ CHAT_ID = os.environ.get("CHAT_ID")
 
 @app.route("/", methods=["GET"])
 def home():
-    token_ok = "yes" if BOT_TOKEN else "no"
-    chat_ok = "yes" if CHAT_ID else "no"
-    return f"Bot is live | BOT_TOKEN loaded: {token_ok} | CHAT_ID loaded: {chat_ok}", 200
+    return "Webhook is live", 200
+
 
 @app.route("/", methods=["POST"])
 def webhook():
     data = request.get_json(silent=True) or {}
 
-    message = data.get("message", "No message received")
+    # 🔍 Debug (optional - remove later)
+    print("Incoming data:", data)
+
+    # ✅ Get TradingView message directly
+    message = data.get("message")
+
+    # Fallback (in case TradingView sends raw text differently)
+    if not message:
+        message = str(data)
 
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
-    r = requests.post(url, json={
+    response = requests.post(url, json={
         "chat_id": CHAT_ID,
         "text": message
     })
 
-    return (r.text, r.status_code)
+    return jsonify({"status": "ok", "telegram": response.text})
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
