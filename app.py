@@ -11,20 +11,24 @@ CHAT_ID = os.environ.get("CHAT_ID")
 def home():
     return "Webhook is live", 200
 
-
 @app.route("/", methods=["POST"])
 def webhook():
-    data = request.get_json(silent=True) or {}
+    data = request.get_json(silent=True)
+    raw_text = request.get_data(as_text=True)
 
-    # 🔍 Debug (optional - remove later)
-    print("Incoming data:", data)
+    print("Incoming JSON:", data)
+    print("Incoming raw text:", raw_text)
 
-    # ✅ Get TradingView message directly
-    message = data.get("message")
+    message = None
 
-    # Fallback (in case TradingView sends raw text differently)
+    if isinstance(data, dict):
+        message = data.get("message")
+
     if not message:
-        message = str(data)
+        message = raw_text.strip()
+
+    if not message:
+        message = "No message received"
 
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
@@ -34,7 +38,6 @@ def webhook():
     })
 
     return jsonify({"status": "ok", "telegram": response.text})
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
